@@ -180,9 +180,14 @@ void Network::update()
 
 int main()
 {
+	int sizeOfNetwork;
+	
+	std::cout << "Type size of network : " << std::endl;
+	std::cin >> sizeOfNetwork;
+
 	Network* network = new Network();
 
-	network->generateNetwork(1, 10);
+	network->generateNetwork(1, sizeOfNetwork);
 
 	network->update();
 
