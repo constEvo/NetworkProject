@@ -1,56 +1,51 @@
 #pragma once
-#include <unordered_set>
-#include <unordered_map>
+#include <vector>
 
+class Node;
 
-
-
-struct Node;
-
+struct Event
+{
+	int eventId;
+	float eProbability;
+};
 
 class Network
 {
-private:
-	std::unordered_map<int, Node*> nodes;
-	//count for id nodes
-	int nextId = 1;
 public:
 
-	//functions to create network
-	//form new network
-	void generateNetwork(int startId, int depth);
-	
-	//add node
-	Node* addNode(int id);
+	Network() {}
 
-	//generate edge for network
-	void addEdge(int id1, int id2);
+	//node management func
+	void attachNode(Node* node);
+	void detachNode(Node* node);
+	//add new node generated via event
+	void attachNewNodes(Node* node);
 
-	//func for network's nodes
-
-	void followNode(Node* node);
-	
-	void collectSecondNeighbours(Node* node, std::unordered_set<Node*>& secondLevelNeighbours);
-
-	//check if node has heighbours nodes
-	bool isOrpahNode(std::unordered_map<int, Node*>::iterator& it);
-	
-	//deleting edge between neighbours nodes
-	void deleteEdge(Node* node);
-	
-	//assign new event to node
-	void addNewValue(Node* node);
-
-	void connectionNotify(Node* sendingNode, Node* receivingNode);
-
-	//seeding random generator values
+	//probability input func
+	void outputTypeEvent();
+	void inputProbability();
+	//seed random value within limit
 	int seedGenerator(int start, int end);
 
-	//add neighbour node for chosen node
-	void addNeighbourNode(Node* node);
-	
-	void doNothing();
-	
-	void update();
+	//simulation func
+	void start(int depth);
+	void addEdge(Node* first_node, Node* second_node);
+	void simulate();
+	bool isOrphan(Node* node);
+	void notify(std::vector<Node*> deleteNodes);
+
+
+	void nodesCount();
+	bool isEmpty();
+
+	std::vector<Event> getEventProbability();
+private:
+
+	std::vector<Event> eventProbability;
+
+	std::vector<Node*> newNodes;
+
+	std::vector<Node*> nodes;
 	
 };
+

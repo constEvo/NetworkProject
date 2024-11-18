@@ -1,4 +1,4 @@
 ﻿  Network.cpp
-G:\C++ Training\Test\NetworkTestProject\Network.cpp(61,63): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
-G:\C++ Training\Test\NetworkTestProject\Network.cpp(101,58): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
-  NetworkTestProject.vcxproj -> G:\C++ Training\Test\NetworkTestProject\x64\Debug\NetworkTestProject.exe
+E:\NetworkTestProject\Network.cpp(28,49): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+E:\NetworkTestProject\Network.cpp(176,6): warning C4101: sizeOfNetwork: неиспользованная локальная переменная
+  NetworkTestProject.vcxproj -> E:\NetworkTestProject\x64\Debug\NetworkTestProject.exe

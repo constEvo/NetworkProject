@@ -1,1 +1,2 @@
 G:\C++ Training\Test\NetworkTestProject\x64\Debug\NetworkTestProject.exe
+E:\NetworkTestProject\x64\Debug\NetworkTestProject.exe
