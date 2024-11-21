@@ -27,11 +27,12 @@ public:
 	void generateNeighbourNode();
 	void doNothing();
 	void connectionNotify(Node* sendingNode, Node* receivingNode);
+	void translateEventNotify(Node* sendingNode, Node* receivingNode, const NodeData& receivingData);
 	void update();
-	void triggerEvent(const int& option);
 
-	NodeData* nodeData;
-	std::unordered_map<Node*, NodeData*> followers;
+	NodeData nodeData;
+	std::unordered_map<Node*, NodeData> followers;
+	std::unordered_map<Node*, std::pair<int, int> > receivedEvents;
 
 private:
 

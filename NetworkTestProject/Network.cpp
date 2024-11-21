@@ -38,8 +38,12 @@ void Network::simulate()
 
 	std::vector<Node*> deleteNodes;
 
-	while (!nodes.empty() && codeWord != 'y')
+	int i = 0;
+
+	while (nodes.size() < 2000) //codeWord != 'y')
 	{
+		std::cout << "ITERATION " << i << std::endl;
+
 		notify(deleteNodes);
 
 		//erase orphan nodes
@@ -55,8 +59,11 @@ void Network::simulate()
 		newNodes.clear();
 		deleteNodes.clear();
 
-		std::cout << "Do you wanna stop simulation y/n ? ";
-		std::cin >> codeWord;
+		nodesCount();
+
+		//std::cout << "Do you wanna stop simulation y/n ? ";
+		//std::cin >> codeWord;
+
 	}	
 
 	for (auto* node : nodes)
@@ -70,10 +77,10 @@ void Network::addEdge(Node* first_node, Node* second_node)
 {
 	if (first_node == second_node) return;
 	
-	if (second_node->nodeData->value)
+	if (second_node->nodeData.value)
 	{
-		first_node->nodeData->sumOfEvents = second_node->nodeData->value;
-		first_node->nodeData->numOfEvents = 1;
+		first_node->nodeData.sumOfEvents = second_node->nodeData.value;
+		first_node->nodeData.numOfEvents = 1;
 	}
 	second_node->followers.insert(std::make_pair(first_node, first_node->nodeData));
 	first_node->connectionNotify(second_node, first_node);
@@ -89,7 +96,7 @@ void Network::detachNode(Node* node)
 
 }
 
-void Network::notify(std::vector<Node*> deleteNodes)
+void Network::notify(std::vector<Node*>& deleteNodes)
 {
 	for (auto node : nodes)
 	{
@@ -109,7 +116,7 @@ void Network::nodesCount()
 
 bool Network::isOrphan(Node* node)
 {
-	return !node->followers.size();
+	return node->followers.empty();
 }
 
 bool Network::isEmpty()
@@ -153,10 +160,6 @@ void Network::inputProbability()
 		event.eProbability = probability;
 		eventProbability.push_back(event);
 	}
-
-	//sort events by probability value (from low to high)
-	sort(eventProbability.begin(), eventProbability.end(),
-		[](Event event_a, Event event_b) { return event_a.eProbability < event_b.eProbability; });
 }
 
 std::vector<Event> Network::getEventProbability()

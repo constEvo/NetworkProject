@@ -32,7 +32,7 @@ public:
 	void addEdge(Node* first_node, Node* second_node);
 	void simulate();
 	bool isOrphan(Node* node);
-	void notify(std::vector<Node*> deleteNodes);
+	void notify(std::vector<Node*>& deleteNodes);
 
 
 	void nodesCount();

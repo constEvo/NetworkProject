@@ -12,19 +12,20 @@ int Node::static_id = 0;
 Node::Node(Network* newNetwork) : network(newNetwork)
 {
 	++static_id;
-	nodeData = new NodeData();
-	nodeData->id = static_id;
+	nodeData.id = static_id;
 }
 
 void Node::generateEvent()
 {
-	this->nodeData->value = network->seedGenerator(1, 10);
+	this->nodeData.value = network->seedGenerator(1, 10);
 
 	for (auto iter = followers.begin(); iter != followers.end(); ++iter)
 	{
-		(*iter).second->sumOfEvents += this->nodeData->value;
-		(*iter).second->numOfEvents += 1;
-		connectionNotify(this, (*iter).first);
+		(*iter).second.sumOfEvents += this->nodeData.value;
+		(*iter).second.numOfEvents += 1;
+
+		//print translated events
+		translateEventNotify(this, (*iter).first, (*iter).second);
 	}
 }
 
@@ -42,17 +43,9 @@ void Node::followNode()
 	auto it = secondLevelNeighbours.begin();
 	std::advance(it, index);
 	Node* chosenNode = *it;
+	this->nodeData.sumOfEvents = 0;
+	this->nodeData.numOfEvents = 0;
 
-	//recieve events from chosen node and increment number of received events
-	this->nodeData->sumOfEvents = chosenNode->nodeData->value;
-	if (chosenNode->nodeData->value == 0)
-	{
-		this->nodeData->numOfEvents = 1;
-	}
-	else
-	{
-		this->nodeData->numOfEvents = 1;
-	}
 	//update followers container
 	chosenNode->followers.insert(std::make_pair(this, this->nodeData));
 	connectionNotify(chosenNode, this);
@@ -60,12 +53,18 @@ void Node::followNode()
 
 void Node::collectSecondNeighbours(Node* node, std::vector<Node*>& secondLevelNeighbours)
 {
+	//create container to find unique second level neighbours
+	std::vector<Node*> uniqueSecondLevelNeighbours;
+
 	for (auto neighbour : node->followers)
 	{
 		for (auto secondNeighbour : neighbour.first->followers)
 		{
-			if (secondNeighbour.first != node)
+			//find unique neighbours
+			if (secondNeighbour.first != node
+				&& std::find(uniqueSecondLevelNeighbours.begin(), uniqueSecondLevelNeighbours.end(), secondNeighbour.first) == uniqueSecondLevelNeighbours.end())
 			{
+				uniqueSecondLevelNeighbours.push_back(secondNeighbour.first);
 				secondLevelNeighbours.push_back(secondNeighbour.first);
 			}
 		}
@@ -88,10 +87,18 @@ void Node::unfollowNode()
 
 void Node::connectionNotify(Node* sendingNode, Node* receivingNode)
 {
-	std::cout << "sending node is " << sendingNode->nodeData->id << " -> receiving node is "
-		<< receivingNode->nodeData->id << " S = " << receivingNode->nodeData->sumOfEvents << std::endl;
-	std::cout << "sending node is " << sendingNode->nodeData->id << " -> receiving node is "
-		<< receivingNode->nodeData->id << " N = " << receivingNode->nodeData->numOfEvents << std::endl << std::endl;
+	std::cout << "sending node is " << sendingNode->nodeData.id << " -> receiving node is "
+		<< receivingNode->nodeData.id << " S = " << receivingNode->nodeData.sumOfEvents << std::endl;
+	std::cout << "sending node is " << sendingNode->nodeData.id << " -> receiving node is "
+		<< receivingNode->nodeData.id << " N = " << receivingNode->nodeData.numOfEvents << std::endl << std::endl;
+}
+
+void Node::translateEventNotify(Node* sendingNode, Node* receivingNode, const NodeData& receivingData)
+{
+	std::cout << "sending node is " << sendingNode->nodeData.id << " -> receiving node is "
+		<< receivingNode->nodeData.id << " S = " << receivingData.sumOfEvents << std::endl;
+	std::cout << "sending node is " << this->nodeData.id << " -> receiving node is "
+		<< receivingNode->nodeData.id << " N = " << receivingData.numOfEvents << std::endl << std::endl;
 }
 
 void Node::generateNeighbourNode()
@@ -99,8 +106,8 @@ void Node::generateNeighbourNode()
 	Node* newNode = new Node(network);
 	network->attachNewNodes(newNode);
 
-	this->nodeData->sumOfEvents = newNode->nodeData->value;
-	this->nodeData->numOfEvents = 0;
+	this->nodeData.sumOfEvents = 0;
+	this->nodeData.numOfEvents = 0;
 
 	newNode->followers.insert(std::make_pair(this, this->nodeData));
 	connectionNotify(newNode, this);
@@ -113,32 +120,47 @@ void Node::doNothing()
 
 void Node::update()
 {
-	
-	float probability = network->seedGenerator(0, 100.0);
+	float probability = network->seedGenerator(0.1, 100.0);
 
-	for (auto i = 0; i < 5; ++i)
+	//check probability for geretating value event
+	if (probability < network->getEventProbability()[0].eProbability) 
 	{
-		if (probability < network->getEventProbability()[i].eProbability)
-		{
-			triggerEvent(network->getEventProbability()[i].eventId);
-			return;
-		}
+		std::cout << "generate event " << std::endl;
+		generateEvent();
+		
 	}
-	
+	//check probability for follow node event
+	else if (probability < network->getEventProbability()[0].eProbability + network->getEventProbability()[1].eProbability)
+	{
+		std::cout << "followNode" << std::endl;
+		followNode();
+		
+	}
+	//check probability for unfollow node event
+	else if (probability < network->getEventProbability()[0].eProbability
+		+ network->getEventProbability()[1].eProbability
+		+ network->getEventProbability()[2].eProbability)
+	{
+		std::cout << "unfollowNode" << std::endl;
+		unfollowNode();
+	}
+	//check probability for creating neighbour node event
+	else if (probability < network->getEventProbability()[0].eProbability
+		+ network->getEventProbability()[1].eProbability
+		+ network->getEventProbability()[2].eProbability
+		+ network->getEventProbability()[3].eProbability)
+	{
+		std::cout << "generateNeighbourNode" << std::endl;
+		generateNeighbourNode();
+	}
+	else
+	{
+		std::cout << "doNothing" << std::endl;
+		doNothing();
+		
+	}	
 }
 
-void Node::triggerEvent(const int& option)
-{
-	switch (option)
-	{
-	case 0: generateEvent(); break;
-	case 1: followNode(); break;
-	case 2: unfollowNode(); break;
-	case 3: generateNeighbourNode(); break;
-	case 4: doNothing();  break;
-	default: break;
-	}
-}
 
 
 
